@@ -1,30 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './globals.css';
 
 const App = () => {
   const [workDuration, setWorkDuration] = useState(25);
   const [breakDuration, setBreakDuration] = useState(5);
-  const [isWorking, setIsWorking] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(workDuration * 60);
-  
-  useEffect(() => {
-    if (isRunning) {
-      const timer = setInterval(() => {
-        setTimeLeft(prevTime => {
-          if (prevTime === 0) {
-            clearInterval(timer);
-            alert(isWorking ? 'Break Time Finished!' : 'Work Time Finished!');
-            setIsWorking(!isWorking);
-            setTimeLeft(isWorking ? breakDuration * 60 : workDuration * 60);
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [isRunning, isWorking, workDuration, breakDuration]);
 
   const handleStart = () => {
     setIsRunning(true);
@@ -36,55 +16,45 @@ const App = () => {
 
   const handleReset = () => {
     setIsRunning(false);
-    setIsWorking(true);
-    setTimeLeft(workDuration * 60);
+    setWorkDuration(25);
+    setBreakDuration(5);
   };
 
-  const handleWorkDurationChange = (e) => {
-    const value = parseInt(e.target.value);
-    if (value >= 0) {
-      setWorkDuration(value);
-      if (!isRunning && isWorking) {
-        setTimeLeft(value * 60);
-      }
-    }
-  };
-
-  const handleBreakDurationChange = (e) => {
-    const value = parseInt(e.target.value);
-    if (value >= 0) {
-      setBreakDuration(value);
-      if (!isRunning && !isWorking) {
-        setTimeLeft(value * 60);
-      }
+  const handleSet = () => {
+    if (workDuration > 0 && breakDuration > 0) {
+      setIsRunning(false);
+    } else {
+      alert("Work duration and break duration cannot be set to 0 simultaneously.");
     }
   };
 
   return (
     <div id="main">
       <div>
+        <label>Work Duration:</label>
         <input
           type="number"
           value={workDuration}
-          onChange={handleWorkDurationChange}
+          onChange={(e) => setWorkDuration(parseInt(e.target.value))}
           data-testid="work-duration"
           disabled={isRunning}
         />
+      </div>
+      <div>
+        <label>Break Duration:</label>
         <input
           type="number"
           value={breakDuration}
-          onChange={handleBreakDurationChange}
+          onChange={(e) => setBreakDuration(parseInt(e.target.value))}
           data-testid="break-duration"
           disabled={isRunning}
         />
       </div>
       <div>
-        {isWorking ? 'Work Time' : 'Break Time'}: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-      </div>
-      <div>
         <button onClick={handleStart} data-testid="start-btn" disabled={isRunning}>Start</button>
         <button onClick={handleStop} data-testid="stop-btn" disabled={!isRunning}>Stop</button>
-        <button onClick={handleReset} data-testid="reset-btn" disabled={isRunning}>Reset</button>
+        <button onClick={handleReset} data-testid="reset-btn">Reset</button>
+        <button onClick={handleSet} data-testid="set-btn">Set</button>
       </div>
     </div>
   );
